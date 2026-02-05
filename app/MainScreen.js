@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -13,26 +13,6 @@ export default function MainScreen() {
   const [serviceMinutes, setServiceMinutes] = useState("");
   const [saveStatus, setSaveStatus] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [entries, setEntries] = useState([]);
-  const [entriesLoading, setEntriesLoading] = useState(true);
-
-  const fetchEntries = useCallback(async () => {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("equipment_entries")
-      .select("equipment_type, service_minutes, IsActive")
-      .order("created_at", { ascending: false });
-    setEntriesLoading(false);
-    if (error) {
-      setEntries([]);
-      return;
-    }
-    setEntries(data ?? []);
-  }, []);
-
-  useEffect(() => {
-    fetchEntries();
-  }, [fetchEntries]);
 
   function handleEquipmentTypeChange(e) {
     const value = e.target.value;
@@ -83,7 +63,6 @@ export default function MainScreen() {
       return;
     }
     setSaveStatus({ success: true });
-    fetchEntries();
   }
 
   const serviceMinutesNum =
@@ -186,66 +165,6 @@ export default function MainScreen() {
           >
             {saving ? "Saving…" : "Save"}
           </button>
-        </div>
-
-        <div className="mt-10">
-          <h2 className="text-lg font-semibold text-slate-900">
-            Equipment entries
-          </h2>
-          <div className="mt-2 overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-200 max-h-80">
-            {entriesLoading ? (
-              <div className="p-4 text-sm text-slate-500">Loading…</div>
-            ) : (
-              <table className="w-full min-w-[320px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-100 text-left font-medium text-slate-700">
-                    <th className="px-3 py-2">Equipment Type</th>
-                    <th className="px-3 py-2">Service Minutes</th>
-                    <th className="px-3 py-2">IsActive</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entries.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={3}
-                        className="px-3 py-4 text-center text-slate-500"
-                      >
-                        No entries yet. Save one above.
-                      </td>
-                    </tr>
-                  ) : (
-                    entries.map((row, i) => (
-                      <tr
-                        key={i}
-                        className={
-                          i % 2 === 0
-                            ? "bg-[#e0f2fe]"
-                            : "bg-[#fce7f3]"
-                        }
-                      >
-                        <td className="px-3 py-2 text-slate-900">
-                          {row.equipment_type ?? "—"}
-                        </td>
-                        <td className="px-3 py-2 text-slate-900">
-                          {row.service_minutes != null
-                            ? row.service_minutes
-                            : "—"}
-                        </td>
-                        <td className="px-3 py-2 text-slate-900">
-                          {row.IsActive == null
-                            ? "—"
-                            : row.IsActive
-                              ? "true"
-                              : "false"}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
         </div>
       </div>
     </main>
